@@ -1,4 +1,4 @@
-# FormsBasedAuthenticationModule
+# Verify FormsAuthentication cookie on request through custom attribute
 httpModule for verification of FormsAuthentication cookie on request, using a custom attribute.
 
 Currently supported use cases:
