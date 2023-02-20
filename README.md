@@ -1,5 +1,5 @@
 # FormsBasedAuthenticationModule
-httpModule for verification of FormsAuthentication cookie on request, using custom a attribute.
+httpModule for verification of FormsAuthentication cookie on request, using a custom attribute.
 
 Currently supported use cases:
 ```csharp 
