@@ -1,11 +1,12 @@
 # Verify FormsAuthentication cookie on request through custom attribute
-httpModule for verification of FormsAuthentication cookie on request, using a custom attribute.
 
-## Currently supported use cases:
+> httpModule for FormsAuthentication verification on requests using custom attributes.
 
-### C#:
 
-#### Decorated on a PageMethod or ASP.NET Ajax WebMethod:
+
+## Currently supported use cases - C#:
+
+### Decorated on spesific PageMethod's or Ajax WebMethod's:
 
 ```csharp 
 [RequiresAuthentication]
@@ -14,18 +15,17 @@ public string AjaxMethod() {
 ``` 
 
 
-#### Decorated on a Page, MasterPage or ASP.NET Ajax WebService Class:
-##### Page Class:
+### Decorated on Page Class:
 ```csharp 
 [RequiresAuthentication]
 public partial class WebFormsPage : System.Web.UI.Page
 ```
-##### MasterPage Class:
+### Decorated on MasterPage Class:
 ```csharp 
 [RequiresAuthentication]
 public partial class WebFormsMasterPage : System.Web.UI.MasterPage
 ```
-##### WebService Class:
+### Decorated on WebService Class:
 ```csharp 
 [RequiresAuthentication]
 [System.Web.Script.Services.ScriptService()]
@@ -39,31 +39,30 @@ public class AspAjaxWebService : System.Web.Services.WebService
 
 ---
 
-### VB:
+## Currently supported use cases - VB.NET:
 
-#### Decorated on a PageMethod or ASP.NET Ajax WebMethod:
+### Decorated on spesific PageMethod's or Ajax WebMethod's:
 ```vb
 <RequiresAuthentication>
 <WebMethod>
 public function AjaxMethod() as string 
 ``` 
 
-#### Decorated on a Page, MasterPage or ASP.NET Ajax WebService Class
-##### Page Class:
+### Decorated on Page Class:
 ```vb 
 <RequiresAuthentication>
 Partial Class WebFormsPage
     Inherits System.Web.UI.Page
 ```
 
-##### MasterPage Class:
+### Decorated on MasterPage Class:
 ```vb 
 <RequiresAuthentication>
 Partial Class WebFormsMasterPage
     Inherits System.Web.UI.MasterPage
 ```
 
-##### WebService Class:
+### Decorated on WebService Class:
 ```vb
 <RequiresAuthentication>
 <System.Web.Script.Services.ScriptService()>
@@ -76,4 +75,15 @@ End Class
 ```
 
 <br/>
-Remember to set the FormsAuthentication cookie!
+
+---
+
+## DO NOT FORGET BEFORE USING: 
+
+* Make sure your FormsAuthentication cookie is set correctly 
+* Verify/change the assembly metadata for System.Web.Extensions which is used to get the Type definition for RestHandlerWithSession:
+```csharp
+Type _RestHandlerWithSessionType = Type.GetType("System.Web.Script.Services.RestHandlerWithSession, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+
+// the "Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" part must match YOUR spesific scenario
+```
