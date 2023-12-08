@@ -24,7 +24,7 @@ ASP.NET HttpModule for verification of FormsAuthentication on requests, using cu
 
 <script RunAt="server">
     Sub Application_Start(ByVal sender As Object, ByVal e As EventArgs)
-        Me.UseAuthorization()
+        Me.UseAuthentication()
     End Sub
 </script>
 ```
