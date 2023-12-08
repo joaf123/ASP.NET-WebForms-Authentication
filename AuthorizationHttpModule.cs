@@ -17,12 +17,17 @@ public class RequiresAuthenticationAttribute : Attribute { }
 /// Attribute based forms authentication verification module.
 /// </summary>
 public class AttributeBasedFormsAuthenticationModule : IHttpModule {
+    public static bool useAuthorization = false;
     /// <summary>
     /// Inits the AttributeBasedFormsAuthentication Module.
     /// </summary>
     /// <param name="application">HttpApplication Parameter</param>
     public void Init(HttpApplication application) {
-        application.PostMapRequestHandler += OnPostAuthorizeRequest;
+        // Check if it should be initialized
+        if (useAuthorization) {
+            // Your initialization logic here
+            application.PostMapRequestHandler += OnPostAuthorizeRequest;
+        }
     }
 
     /// <summary>
@@ -89,7 +94,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                 string methodName = segments[1]; // Extract the part after .asmx/ as the method name
                 string asmxUrlWithoutMethod = requestUrl.Replace("/" + methodName, ""); // Remove the method name from the URL
 
-                var codeBehindPath = GetCodeBehindPathFromASMXUrl(asmxUrlWithoutMethod); 
+                var codeBehindPath = GetCodeBehindPathFromASMXUrl(asmxUrlWithoutMethod);
 
                 if (!string.IsNullOrEmpty(codeBehindPath)) {
                     dynamic _handler = context.CurrentHandler;
@@ -231,5 +236,11 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         var pathInfo = request.PathInfo.TrimStart('/');
         var slashIndex = pathInfo.IndexOf('/');
         return slashIndex >= 0 ? pathInfo.Substring(0, slashIndex) : pathInfo;
+    }
+}
+
+public static class HttpApplicationExtensions {
+    public static void UseAuthorization(this HttpApplication application) {
+        AttributeBasedFormsAuthenticationModule.useAuthorization = true;
     }
 }
