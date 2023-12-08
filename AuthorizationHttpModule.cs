@@ -17,14 +17,14 @@ public class RequiresAuthenticationAttribute : Attribute { }
 /// Attribute based forms authentication verification module.
 /// </summary>
 public class AttributeBasedFormsAuthenticationModule : IHttpModule {
-    public static bool useAuthorization = false;
+    public static bool useAuthentication = false;
     /// <summary>
     /// Inits the AttributeBasedFormsAuthentication Module.
     /// </summary>
     /// <param name="application">HttpApplication Parameter</param>
     public void Init(HttpApplication application) {
         // Check if it should be initialized
-        if (useAuthorization) {
+        if (useAuthentication) {
             // Your initialization logic here
             application.PostMapRequestHandler += OnPostAuthorizeRequest;
         }
@@ -240,7 +240,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
 }
 
 public static class HttpApplicationExtensions {
-    public static void UseAuthorization(this HttpApplication application) {
-        AttributeBasedFormsAuthenticationModule.useAuthorization = true;
+    public static void UseAuthentication(this HttpApplication application) {
+        AttributeBasedFormsAuthenticationModule.useAuthentication = true;
     }
 }
