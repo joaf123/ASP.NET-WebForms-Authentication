@@ -1,8 +1,9 @@
-# Verify FormsAuthentication cookie on request through custom attribute
+# Verify FormsAuthentication cookie on request using a custom attribute
 
 ASP.NET HttpModule for verification of FormsAuthentication on requests, using custom attributes.
+Supports WebMethods, Page Classes, MasterPage Classes & WebService Classes
 
-## Setup:
+##  Setup:
 
 ### Web.config
 ```xml
