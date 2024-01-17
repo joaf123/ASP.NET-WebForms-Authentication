@@ -5,6 +5,10 @@ Supports WebMethods, Page Classes, MasterPage Classes & WebService Classes
 
 ##  Setup:
 
+### Prerequisite
+IIS needs to be running in integrated mode. 
+Classic mode is not supported due to the nature of the classic IIS pipeline
+
 ### Web.config
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
