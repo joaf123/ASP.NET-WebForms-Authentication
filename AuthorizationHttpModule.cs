@@ -8,7 +8,7 @@ using System.Web.Security;
 using System.Web.UI;
 
 /// <summary>
-/// Verify authorization on call to WebMethods or Pages with the attribute: &lt;RequiresAuthentication&gt; (VB) | [RequiresAuthentication] (C#).
+/// Verify authentication on call to WebMethods or Pages with the attribute: &lt;RequiresAuthentication&gt; (VB) | [RequiresAuthentication] (C#).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class RequiresAuthenticationAttribute : Attribute { }
@@ -38,7 +38,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
     }
 
     /// <summary>
-    /// A request has hit IIS. This events handles authorization for the given request.
+    /// A request has hit IIS. This event handles validation of the authentication cookie for the given request.
     /// </summary>
     /// <param name="sender">Sender Parameter</param>
     /// <param name="e">EventArgs Parameter</param>
