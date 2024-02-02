@@ -23,7 +23,7 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 
 ```
 
-### Global.asax:
+### Global.asax (vb[^1]):
 ```asp
 <%@ Application Language="VB" %>
 
@@ -33,6 +33,7 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
     End Sub
 </script>
 ```
+[^1]: `this.UseAuthentication` in C#
 
 ### DO NOT FORGET BEFORE USING: 
 
