@@ -38,7 +38,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
     }
 
     /// <summary>
-    /// A request has hit IIS. This event handles validation of the authentication cookie for the given request.
+    /// A request has hit IIS. This events handles authorization for the given request.
     /// </summary>
     /// <param name="sender">Sender Parameter</param>
     /// <param name="e">EventArgs Parameter</param>
@@ -47,12 +47,12 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         var context = app.Context;
         var request = context.Request;
         var requestUrl = context.Request.Url.ToString();
-
+    
         //The request is for a Page Class:
         if (context.Handler is Page page) {
             var pageType = page.GetType();
             //Check if the MasterPage requires authentication:
-            if (!requestUrl.Contains(".axd?")) {
+            if (!requestUrl.ToLower().Contains(".axd?")) {
                 var masterPagePath = GetMasterPagePathFromMarkup(page.AppRelativeVirtualPath);
                 if (!string.IsNullOrEmpty(masterPagePath)) {
                     var masterPageType = BuildManager.GetCompiledType(masterPagePath);
@@ -64,7 +64,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                     }
                 }
             }
-
+    
             //Check if the Page requires authentication:
             if (pageType.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
                 if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
@@ -72,7 +72,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                     return;
                 }
             }
-
+    
             //The request is for a WebMethod inside a Page Class:
             if (request.HttpMethod == "POST") {
                 var methodName = GetWebMethodNameFromRequest(request);
@@ -86,83 +86,30 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                 }
             }
         };
-
+    
         //The request is for a WebService Class:
-        if (!(context.Handler is Page) & requestUrl.Contains(".asmx/")) {
+        if (!(context.Handler is Page) & requestUrl.ToLower().Contains(".asmx/")) {
             var segments = requestUrl.Split(new[] { ".asmx/" }, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length > 1) {
                 string methodName = segments[1]; // Extract the part after .asmx/ as the method name
                 string asmxUrlWithoutMethod = requestUrl.Replace("/" + methodName, ""); // Remove the method name from the URL
-
-                var codeBehindPath = GetCodeBehindPathFromASMXUrl(asmxUrlWithoutMethod);
-
-                if (!string.IsNullOrEmpty(codeBehindPath)) {
-                    dynamic _handler = context.CurrentHandler;
-                    dynamic handlerWrapper = context.Handler;
-
-                    // Retrieve original handler and its metadata
-                    if (handlerWrapper != null) {
-                        var originalHandlerField = handlerWrapper.GetType().GetField("_originalHandler", BindingFlags.NonPublic | BindingFlags.Instance);
-                        var originalHandler = originalHandlerField?.GetValue(handlerWrapper) as dynamic;
-
-                        if (originalHandler != null) {
-                            //Session Disabled WebMethod is Called:
-                            var webServiceMethodDataField = originalHandler.GetType().GetField("_webServiceMethodData", BindingFlags.NonPublic | BindingFlags.Instance);
-                            var webServiceMethodData = webServiceMethodDataField?.GetValue(originalHandler) as dynamic;
-
-                            //If the WebService Method has SessionEnabled=True the RestHandlerWithSession is used, instead of RestHandler class.
-                            //RestHandlerWithSession is an empty class that inherits both the base RestHandler class and IRequireSessionState for session accsess
-                            //Because of this we need to get the class type in a different way, through the BaseType.
-                            //Since System.Web.Script.Services.RestHandlerWithSession is an internal class we also need to retive the type like so:
-                            Type _RestHandlerWithSessionType = Type.GetType("System.Web.Script.Services.RestHandlerWithSession, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-
-                            //Session Enabled WebMethod is Called:
-                            if (_RestHandlerWithSessionType == originalHandler.GetType()) {
-                                webServiceMethodDataField = originalHandler.GetType().BaseType.GetField("_webServiceMethodData", BindingFlags.NonPublic | BindingFlags.Instance);
-                                webServiceMethodData = webServiceMethodDataField?.GetValue(originalHandler) as dynamic;
-                            };
-
-                            if (webServiceMethodData != null) {
-                                var ownerField = webServiceMethodData.GetType().GetField("_owner", BindingFlags.NonPublic | BindingFlags.Instance);
-                                var owner = ownerField?.GetValue(webServiceMethodData) as dynamic;
-
-                                if (owner != null) {
-                                    var typeDataField = owner.GetType().GetField("_typeData", BindingFlags.NonPublic | BindingFlags.Instance);
-                                    var typeData = typeDataField?.GetValue(owner) as dynamic;
-
-                                    if (typeData != null) {
-                                        var actualTypeField = typeData.GetType().GetField("_actualType", BindingFlags.NonPublic | BindingFlags.Instance);
-                                        var actualType = actualTypeField?.GetValue(typeData) as dynamic;
-
-                                        //The WebMethod's Class Type is retrived, we can now check for Custom Attributes:
-                                        var attributes = actualType.GetCustomAttributes(typeof(RequiresAuthenticationAttribute), true);
-                                        bool requiresAuthentication = attributes.Length > 0;
-
-                                        //Check if authentication is required for the main class
-                                        if (requiresAuthentication) {
-                                            if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
-                                                DenyAccess(context);
-                                                return;
-                                            }
-                                        }
-
-                                        //Check if authentication is required for the requested method
-                                        if (!requiresAuthentication) {
-                                            var methodInfo = actualType.GetMethod(methodName);
-                                            if (methodInfo != null) {
-                                                var methodAttributes = methodInfo.GetCustomAttributes(typeof(RequiresAuthenticationAttribute), true);
-                                                bool methodRequiresAuthentication = methodAttributes.Length > 0;
-
-                                                if (methodRequiresAuthentication) {
-                                                    if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
-                                                        DenyAccess(context);
-                                                        return;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                var codeBehindType = BuildManager.GetCompiledType(GetRelativeVirtualPath(asmxUrlWithoutMethod));
+    
+                if (codeBehindType != null) {
+                    //Check if the main WebService Class requires authentication:
+                    if (codeBehindType.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
+                        if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
+                            DenyAccess(context);
+                            return;
+                        }
+                    }
+    
+                    //Check if the WebMethod requres authentication:
+                    if (!string.IsNullOrEmpty(methodName)) {
+                        var methodInfo = codeBehindType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+                        if (methodInfo?.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
+                            if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
+                                DenyAccess(context);
                             }
                         }
                     }
@@ -170,22 +117,12 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
             }
         }
     }
-
-    private string GetCodeBehindPathFromASMXUrl(string asmxUrl) {
-        string relativePath = GetRelativeVirtualPath(asmxUrl);
-        if (!string.IsNullOrEmpty(relativePath)) {
-            string asmxMarkup = File.ReadAllText(HttpContext.Current.Server.MapPath(relativePath));
-
-            Match match = Regex.Match(asmxMarkup, @"<%@ WebService Language=""VB"" CodeBehind=""(.*?)"" Class=""(.*?)"" %>");
-            if (match.Success && match.Groups.Count > 1) {
-                string codeBehindPath = match.Groups[1].Value;
-                return codeBehindPath;
-            }
-        }
-
-        return string.Empty;
-    }
-
+    
+    /// <summary>
+    /// Get absolute path as AppRelative path
+    /// </summary>
+    /// <param name="absolutePath">Path to map out as string</param>
+    /// <returns>Returns absolute path as AppRelative path</returns>
     private string GetRelativeVirtualPath(string absolutePath) {
         Uri uri = new Uri(absolutePath);
         string rootPath = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
@@ -194,10 +131,13 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         }
         return string.Empty;
     }
-
+    
+    /// <summary>
+    /// Get the MasterPage path from the markup as virutal appRelative path.
+    /// </summary>
+    /// <param name="virtualPath">Path to map out as string</param>
+    /// <returns>Path as string</returns>
     private string GetMasterPagePathFromMarkup(string virtualPath) {
-        string currentFolder = Path.GetDirectoryName(HttpContext.Current.Server.MapPath(virtualPath));
-
         string markup = File.ReadAllText(HttpContext.Current.Server.MapPath(virtualPath));
         using (StringReader reader = new StringReader(markup)) {
             string line;
@@ -205,18 +145,18 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                 Match match = Regex.Match(line, "MasterPageFile\\s*=\\s*\"(.+?)\"");
                 if (match.Success) {
                     string masterPagePath = match.Groups[1].Value;
-
+    
                     if (!VirtualPathUtility.IsAppRelative(masterPagePath)) {
                         masterPagePath = VirtualPathUtility.Combine(virtualPath, masterPagePath);
                     }
-
+    
                     return masterPagePath;
                 }
             }
         }
-        return null;
+        return string.Empty;
     }
-
+    
     /// <summary>
     /// Deny access.
     /// </summary>
@@ -226,7 +166,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         context.Response.SuppressContent = true;
         context.Response.End();
     }
-
+    
     /// <summary>
     /// Gets the web method name from request.
     /// </summary>
