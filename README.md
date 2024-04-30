@@ -44,7 +44,6 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 [WebMethod]
 public string AjaxMethod() {
 ``` 
-or
 ### Decorated on the main WebService Class:
 ```csharp 
 [RequiresAuthentication]
@@ -54,13 +53,11 @@ or
 [global::Microsoft.VisualBasic.CompilerServices.DesignerGenerated()]
 public class AspAjaxWebService : System.Web.Services.WebService
 ```
-
 ### Decorated on a Page Class:
 ```csharp 
 [RequiresAuthentication]
 public partial class WebFormsPage : System.Web.UI.Page
 ```
-or
 ### Decorated on a MasterPage Class:
 ```csharp 
 [RequiresAuthentication]
