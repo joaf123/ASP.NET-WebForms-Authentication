@@ -45,6 +45,7 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 public string AjaxMethod() {
 ``` 
 ### Decorated on the main WebService Class:
+_Not supported with pathing as of yet. Small rewrite needed_
 ```csharp 
 [RequiresAuthentication]
 [System.Web.Script.Services.ScriptService()]
