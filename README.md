@@ -20,7 +20,6 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
         </modules>
     </system.webServer>
 </configuration>
-
 ```
 
 ### Global.asax (vb[^1]):
@@ -35,15 +34,6 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 ```
 [^1]: `this.UseAuthentication` in C#
 
-### DO NOT FORGET BEFORE USING: 
-
-* Make sure your FormsAuthentication cookie is set correctly 
-* Verify/change the assembly metadata for System.Web.Extensions which is used to get the Type definition for RestHandlerWithSession:
-```csharp
-Type _RestHandlerWithSessionType = Type.GetType("System.Web.Script.Services.RestHandlerWithSession, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-
-// the "Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" part must match YOUR spesific scenario
-```
 
 ## Supported Use Cases:
 
