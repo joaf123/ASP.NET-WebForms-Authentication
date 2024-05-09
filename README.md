@@ -22,7 +22,8 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 </configuration>
 ```
 
-### Global.asax (vb[^1]):
+### Global.asax:
+#### VB syntax
 ```asp
 <%@ Application Language="VB" %>
 
@@ -32,20 +33,20 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
     End Sub
 </script>
 ```
-[^1]: `this.UseAuthentication` in C#
+#### C# syntax
+```asp
+<%@ Application Language="C#" %>
 
+<script RunAt="server">
+    void Application_Start(object sender, EventArgs e)
+    {
+        this.UseAuthentication();
+    }
+</script>
+```
 
-## Supported Use Cases:
-
-### Decorated on spesific PageMethod's or Ajax WebMethod's:
-
-```csharp 
-[RequiresAuthentication]
-[WebMethod]
-public string AjaxMethod() {
-``` 
-### Decorated on the main WebService Class:
-_Not supported with pathing as of yet. Small rewrite needed_
+## Supported Use:
+### WebService Classes:
 ```csharp 
 [RequiresAuthentication]
 [System.Web.Script.Services.ScriptService()]
@@ -54,13 +55,24 @@ _Not supported with pathing as of yet. Small rewrite needed_
 [global::Microsoft.VisualBasic.CompilerServices.DesignerGenerated()]
 public class AspAjaxWebService : System.Web.Services.WebService
 ```
-### Decorated on a Page Class:
+### HttpHandler Classes:
+```csharp
+[RequiresAuthentication]
+public class dropzone_FileUpload : IHttpHandler, System.Web.SessionState.IRequiresSessionState
+```
+### Page Classes:
 ```csharp 
 [RequiresAuthentication]
 public partial class WebFormsPage : System.Web.UI.Page
 ```
-### Decorated on a MasterPage Class:
+### MasterPage Classes:
 ```csharp 
 [RequiresAuthentication]
 public partial class WebFormsMasterPage : System.Web.UI.MasterPage
 ```
+### WebMethods inside Page Classes & WebMethods inside WebService Classes:
+```csharp 
+[RequiresAuthentication]
+[WebMethod]
+public string AjaxMethod() {
+``` 
