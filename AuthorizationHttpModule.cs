@@ -42,12 +42,12 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
     /// </summary>
     /// <param name="sender">Sender Parameter</param>
     /// <param name="e">EventArgs Parameter</param>
-    private void OnPostAuthorizeRequest(object sender, EventArgs e) {
+     private void OnPostAuthorizeRequest(object sender, EventArgs e) {
         var app = (HttpApplication)sender;
         var context = app.Context;
         var request = context.Request;
         var requestUrl = context.Request.Url.ToString();
-    
+
         //The request is for a Page Class:
         if (context.Handler is Page page) {
             var pageType = page.GetType();
@@ -64,7 +64,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                     }
                 }
             }
-    
+
             //Check if the Page requires authentication:
             if (pageType.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
                 if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
@@ -72,7 +72,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                     return;
                 }
             }
-    
+
             //The request is for a WebMethod inside a Page Class:
             if (request.HttpMethod == "POST") {
                 var methodName = GetWebMethodNameFromRequest(request);
@@ -86,15 +86,34 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                 }
             }
         };
-    
+
+        //The request is for a HttpHandler Class:
+        if (!(context.Handler is Page) & context.Request.CurrentExecutionFilePathExtension == ".ashx") {
+            var segments = requestUrl.Split(new[] { ".ashx" }, StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length > 0) {
+                string ashxUrlWithoutMethod = $"{segments[0]}.ashx"; // Remove queryStrings from URL
+                var codeBehindType = BuildManager.GetCompiledType(GetRelativeVirtualPath(ashxUrlWithoutMethod));
+
+                //Check if the HttpHandler Class Requires Authentication:
+                if (codeBehindType != null) {
+                    if (codeBehindType.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
+                        if (!request.IsAuthenticated || request.Cookies?[FormsAuthentication.FormsCookieName] == null) {
+                            DenyAccess(context);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         //The request is for a WebService Class:
-        if (!(context.Handler is Page) & requestUrl.ToLower().Contains(".asmx/")) {
+        if (!(context.Handler is Page) & context.Request.CurrentExecutionFilePathExtension == ".asmx") {
             var segments = requestUrl.Split(new[] { ".asmx/" }, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length > 1) {
                 string methodName = segments[1]; // Extract the part after .asmx/ as the method name
                 string asmxUrlWithoutMethod = requestUrl.Replace("/" + methodName, ""); // Remove the method name from the URL
                 var codeBehindType = BuildManager.GetCompiledType(GetRelativeVirtualPath(asmxUrlWithoutMethod));
-    
+
                 if (codeBehindType != null) {
                     //Check if the main WebService Class requires authentication:
                     if (codeBehindType.GetCustomAttribute<RequiresAuthenticationAttribute>() != null) {
@@ -103,7 +122,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
                             return;
                         }
                     }
-    
+
                     //Check if the WebMethod requres authentication:
                     if (!string.IsNullOrEmpty(methodName)) {
                         var methodInfo = codeBehindType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
