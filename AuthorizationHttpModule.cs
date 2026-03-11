@@ -89,7 +89,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         };
 
         //The request is for a HttpHandler Class:
-        if (!(context.Handler is Page) & context.Request.CurrentExecutionFilePathExtension == ".ashx") {
+        if (!(context.Handler is Page) && context.Request.CurrentExecutionFilePathExtension == ".ashx") {
             var segments = requestUrl.Split(new[] { ".ashx" }, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length > 0) {
                 string ashxUrlWithoutMethod = $"{segments[0]}.ashx"; // Remove queryStrings from URL
@@ -108,7 +108,7 @@ public class AttributeBasedFormsAuthenticationModule : IHttpModule {
         }
 
         //The request is for a WebService Class:
-        if (!(context.Handler is Page) & context.Request.CurrentExecutionFilePathExtension == ".asmx") {
+        if (!(context.Handler is Page) && context.Request.CurrentExecutionFilePathExtension == ".asmx") {
             var segments = requestUrl.Split(new[] { ".asmx/" }, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length > 1) {
                 string methodName = segments[1]; // Extract the part after .asmx/ as the method name
@@ -204,4 +204,5 @@ public static class HttpApplicationExtensions {
         AttributeBasedFormsAuthenticationModule.useAuthentication = true;
     }
 }
+
 
