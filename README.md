@@ -38,8 +38,7 @@ Classic mode is not supported due to the nature of the classic IIS pipeline
 <%@ Application Language="C#" %>
 
 <script RunAt="server">
-    void Application_Start(object sender, EventArgs e)
-    {
+    void Application_Start(object sender, EventArgs e) {
         this.UseAuthentication();
     }
 </script>
@@ -72,7 +71,7 @@ public partial class WebFormsMasterPage : System.Web.UI.MasterPage
 ```
 ### WebMethods inside Page Classes & WebMethods inside WebService Classes:
 ```csharp 
-[RequiresAuthentication]
 [WebMethod]
-public string AjaxMethod() {
+[RequiresAuthentication]
+public string AjaxMethod() { ... }
 ``` 
