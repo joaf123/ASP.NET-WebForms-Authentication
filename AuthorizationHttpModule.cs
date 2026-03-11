@@ -17,7 +17,8 @@ public class RequiresAuthenticationAttribute : Attribute { }
 /// Attribute based forms authentication verification module.
 /// </summary>
 public class AttributeBasedFormsAuthenticationModule : IHttpModule {
-    public static bool useAuthentication = false;
+    public static volatile bool useAuthentication = false;
+    
     /// <summary>
     /// Inits the AttributeBasedFormsAuthentication Module.
     /// </summary>
@@ -203,3 +204,4 @@ public static class HttpApplicationExtensions {
         AttributeBasedFormsAuthenticationModule.useAuthentication = true;
     }
 }
+
